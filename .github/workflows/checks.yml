@@ -1,4 +1,3 @@
----
 name: Checks
 
 on: [push]
@@ -8,31 +7,28 @@ jobs:
     name: Test and Lint
     runs-on: ubuntu-20.04
     steps:
-      - name: Set up Docker Build
-        uses: docker/setup-buildx-action@v1
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-
-      - name: Set up Docker
-        uses: docker/setup-docker-action@v2
-
-      - name: Install Docker Compose run
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Test
-        run: docker-compose run --rm app sh -c "python manage.py test"
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
 
-      - name: Lint
-        run: docker-compose run --rm app sh -c "flake8"
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          if [ -f requirements.dev.txt ]; then pip install -r requirements.dev.txt; fi
+
+      - name: Run tests
+        run: |
+          source venv/bin/activate
+          python manage.py test
+
+      - name: Run linter
+        run: |
+          source venv/bin/activate
+          flake8
