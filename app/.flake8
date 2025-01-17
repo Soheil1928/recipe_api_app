@@ -2,6 +2,5 @@
 exclude =
     migrations,
     __pycache__,
-    manage.py,
-    app/app/settings.py
-ignore = E501
+    settings.py,
+    manage.py
